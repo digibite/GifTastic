@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- <link rel="stylesheet" type="text/css" href="assets/css/style.css"> -->
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script> -->
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+        crossorigin="anonymous"></script>
+    <title>Document</title>
+    <style>
+        .container {
+            margin: 10px 50px 0px 50px;
+        }
+        #animals {
+            margin-bottom: 50px;
+        }
+        #add-animal-div {
+            float: right;
+            margin-bottom: 50px;
+        }
+        img {
+            width: 150px;
+            height: 150px;
+            margin: 25px 10px 10px 10px;
+            display: inline-block;
+        }
+        #animalPics{
+            width: 650px;
+            height: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="animals">
+        </div>
+        <div id="add-animal-div">
+            <input id="add-animal" type="text" >
+            <input id="add-button" type="button" value="add animal" >
+        </div>
+    </div>
+    <div id="animalPics">
+    </div>
+    <script>
+        var animals = ["cheetah", "falcon", "quetzal", "hamster", "dog", "ferret", "cat", "rabbit"];
+        
+        //adds the array as it currently exists
+        function renderAnimals() {
+            //for each element in the array
+            for (var i = 0; i < animals.length; i++) {
+                
+                //make a new button element
+                var newBtn = $("<button>");
+                //attach to it data representing its name
+                newBtn.attr("data-name", animals[i]);
+                
+                //add the btn class to it; currently this is applied to all non-#add-button buttons
+                newBtn.addClass("btn");
+                
+                //give the button text displaying the string associated with it
+                newBtn.text(animals[i]);
+                //append the button onto the button display div
+                $("#animals").append(newBtn);
+            }
+        }
+        renderAnimals();
+        
+        //for #add-button:
+        $(function () {
+            $("#add-button").on("click", function (e) {
+                e.preventDefault();
+                //make animal the equivalent of whatever the user typed in and set it to lower case
+                var animal = $("#add-animal").val().toLowerCase();
+                
+                //if the user input something and their input is not in the display, do this (otherwise do nothing)
+                if (animal !== "" && !animals.includes(animal)) {
+                    //empty both button and gif display regions (we will be repopulating them)
+                    $("#animalPics").empty();
+                    $("#animals").empty();
+                    //smack the new text onto the animals array and display the buttons where they are supposed to be again; could be more efficient, but hey, it works
+                    animals.push(animal);
+                    renderAnimals();
+                    //get your correct api url and call ajax with it
+                    var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+                        animal + "&api_key=dc6zaTOxFJmzC&limit=10";
+                    $.ajax({
+                        url: queryURL,
+                        method: "GET"
+                    }).then(function (response) {
+                        //populate the gifs field with the gifs
+                        for (var i = 0; i < response.data.length; i++) {
+                            $("#animalPics").append("<img src='" + response.data[i].images.original.url + "' >");
+                        }
+                    });
+                }
+            })
+            //always apply to all buttons of the .btn class this on click function:
+            $(document).on("click", ".btn", function (e) {
+                
+                //we want to re-populate the gifs display, so we need to clear it first
+                $("#animalPics").empty();
+                //query url set to obtain the correct information based on the text corresponding to the button
+                var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+                        $(this).attr("data-name") + "&api_key=dc6zaTOxFJmzC&limit=10";
+                
+                //call ajax with the url
+                $.ajax({
+                    url: queryURL,
+                    method: "GET"
+                }).then(function (response) {
+                    //populate the gifs field with the gifs
+                    for (var i = 0; i < response.data.length; i++) {
+                        $("#animalPics").append("<img src='" + response.data[i].images.original.url + "' >");
+                    }
+                });
+            });
+        })
+    </script>
+</body>
+</html>
